@@ -1,10 +1,11 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, View, Image } from 'react-native';
+import { StyleSheet, View, Platform } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as MediaLibrary from 'expo-media-library';
 import { captureRef } from 'react-native-view-shot';
 import { useState, useRef } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import domtoimage from 'dom-to-image';
 import ImageViewer from './components/ImageViewer';
 import Button from './components/Button';
 import CircleButton from './components/CircleButton';
@@ -48,25 +49,37 @@ export default function App() {
   }
 
   const onSaveImageAsync = async () => {
-    try {
-      console.log("Permission status: ", permissionStatus)
+    if (Platform.OS !== 'web') {
+      try {
+        if (permissionStatus === null || permissionStatus.status === 'denied') {
+          console.log("Requesting permission")
+          requestPermission();
+        }
 
-      if (permissionStatus === null || permissionStatus.status === 'denied') {
-        console.log("Requesting permission")
-        requestPermission();
+        const localUri = await captureRef(imageRef, {
+          height: 440,
+          quality: 1,
+        })
+
+        await MediaLibrary.saveToLibraryAsync(localUri);
+        if (localUri) {
+          alert('Image saved successfully!')
+        }
+      } catch (e) {
+        console.log(e);
       }
-
-      const localUri = await captureRef(imageRef, {
-        height: 440,
-        quality: 1,
-      })
-
-      await MediaLibrary.saveToLibraryAsync(localUri);
-      if (localUri) {
-        alert('Image saved successfully!')
-      }
-    } catch (e) {
-      console.log(e);
+    } else {
+      domtoimage
+        .toJpeg(imageRef.current, { quality: 1 })
+        .then(dataUrl => {
+          let link = document.createElement('a')
+          link.download = 'my-image-name.jpeg'
+          link.href = dataUrl
+          link.click()
+        })
+        .catch(err => {
+          console.log(err)
+        })
     }
   }
 

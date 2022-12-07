@@ -1,16 +1,18 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, View, Image } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
+import { useState } from 'react';
 import ImageViewer from './components/ImageViewer';
 import Button from './components/Button';
 import CircleButton from './components/CircleButton';
 import IconButton from './components/IconButton';
-import * as ImagePicker from 'expo-image-picker';
-import { useState } from 'react';
+import EmojiPicker from './components/EmojiPicker';
 
 const PlaceholderImage = require('./assets/images/background.png')
 
 export default function App() {
 
+  const [isModalVisible, setIsModalVisible] = useState(false);
   const [showAppOptions, setShowAppOptions] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
 
@@ -33,11 +35,15 @@ export default function App() {
   }
 
   const onAddSticker = () => {
-    // todo
+    setIsModalVisible(true);
   }
 
   const onSaveImageAsync = async () => {
     // todo
+  }
+
+  const onModalClose = () => {
+    setIsModalVisible(false);
   }
 
   return (
@@ -68,6 +74,10 @@ export default function App() {
           </View>
         )
       }
+
+      <EmojiPicker isVisible={isModalVisible} onClose={onModalClose}>
+        {/* todo */}
+      </EmojiPicker>
 
       <StatusBar style="auto" />
     </View>
